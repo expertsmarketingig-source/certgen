@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Certificados</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="certificate.css" media="all">
+</head>
+<body>
+    <!-- App UI -->
+    <div class="app-container no-print">
+        <aside class="sidebar">
+            <div class="logo-area">
+                <i class="fa-solid fa-file-shield"></i>
+                <h2>CertiGen</h2>
+            </div>
+            <div class="brand-logo-area">
+                <img src="LOGO Experts -Servicios Ambientales- X Color White- 6851x2641px.png" alt="Experts Logo" class="sidebar-brand-logo">
+            </div>
+            <div class="settings">
+                <h3>Configuración</h3>
+                <div class="setting-group">
+                    <label>Serie (Prefijo) N°</label>
+                    <input type="text" id="settings-cert-prefix" value="6">
+                </div>
+                <div class="setting-group">
+                    <label>Próximo Certificado N°</label>
+                    <input type="number" id="settings-next-number" value="812">
+                    <button id="btn-save-settings" class="btn-secondary">Guardar</button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h1>Emisión de Certificados</h1>
+                <p>Selecciona un cliente para generar su certificado automáticamente.</p>
+            </header>
+
+            <div class="header-actions">
+                <div class="search-bar">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Buscar por nombre de cliente o ubicación...">
+                </div>
+                <button id="btn-add-client-modal" class="btn-primary">
+                    <i class="fa-solid fa-plus"></i> Nuevo Cliente
+                </button>
+            </div>
+
+            <div class="client-list-header">
+                <span>Cliente</span>
+                <span>Última Fecha</span>
+                <span>Acción</span>
+            </div>
+            
+            <div class="client-list" id="client-list">
+                <!-- Populated by JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Form -->
+    <div class="modal-overlay no-print" id="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-client-name">Nombre del Cliente</h2>
+                <button class="btn-close" id="btn-close-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Ubicación</label>
+                    <input type="text" id="form-ubicacion" class="input-glass">
+                </div>
+                <div class="form-group full-width">
+                    <label>Leyenda del Servicio</label>
+                    <textarea id="form-leyenda" rows="3" class="input-glass"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Fecha del Servicio</label>
+                        <input type="date" id="form-fecha-servicio" class="input-glass">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Vencimiento</label>
+                        <input type="date" id="form-fecha-vencimiento" class="input-glass">
+                    </div>
+                    <div class="form-group">
+                        <label>Serie N°</label>
+                        <input type="text" id="form-cert-prefix" class="input-glass">
+                    </div>
+                    <div class="form-group">
+                        <label>Certificado N°</label>
+                        <input type="number" id="form-cert-number" class="input-glass">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="btn-cancel">Cancelar</button>
+                <button class="btn-secondary" id="btn-save-client">
+                    <i class="fa-solid fa-save"></i> Guardar cambios
+                </button>
+                <button class="btn-secondary" id="btn-download">
+                    <i class="fa-solid fa-download"></i> Descargar
+                </button>
+                <button class="btn-primary" id="btn-generate">
+                    <i class="fa-solid fa-print"></i> Generar e Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Form Add Client -->
+    <div class="modal-overlay no-print" id="modal-add-client-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Añadir Nuevo Cliente</h2>
+                <button class="btn-close" id="btn-close-add-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group full-width">
+                    <label>Nombre del Cliente</label>
+                    <input type="text" id="form-new-client-name" class="input-glass" placeholder="Ej. EMPRESA S.A.">
+                </div>
+                <div class="form-group full-width">
+                    <label>Ubicación</label>
+                    <input type="text" id="form-new-client-location" class="input-glass" placeholder="Ej. Av. Siempreviva 742">
+                </div>
+                <div class="form-group full-width">
+                    <label>Leyenda Especial (Opcional)</label>
+                    <textarea id="form-new-client-legend" rows="3" class="input-glass" placeholder="Dejar en blanco para usar la leyenda por defecto"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="btn-cancel-add">Cancelar</button>
+                <button class="btn-primary" id="btn-save-new-client">
+                    <i class="fa-solid fa-save"></i> Guardar Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Print Template -->
+    <div class="print-container" id="print-container">
+        <!-- Recreación fiel del PDF -->
+        <div class="cert-header">
+            <div class="cert-header-left">
+                <div class="logo-placeholder">
+                    <img src="logo_placeholder.png.png" alt="EXPERTS SERVICIOS AMBIENTALES" id="cert-logo" onerror="this.style.display='none'">
+                </div>
+                <div class="contact-info">
+                    <p>TELÉFONO: 11 5502-6228</p>
+                    <p>WEB: WWW.SERVICIOSEXPERTS.COM</p>
+                    <p>CORREO: INFO@SERVICIOSEXPERTS.COM</p>
+                    <p>DIRECCIÓN: AV. DON BOSCO 5057, MORÓN.</p>
+                </div>
+            </div>
+            <div class="cert-header-right">
+                <div class="habil-info">
+                    <p>Habil. Morón N°19</p>
+                    <p>Habil. La Matanza N°75</p>
+                    <p>Habil. Asuntos Agrarios</p>
+                    <p>N° 354</p>
+                </div>
+                <div class="qr-placeholder">
+                    <img src="qr_high_res.png" alt="QR" id="cert-qr" onerror="this.style.display='none'">
+                    <p class="qr-text">Escaneá el código QR para conocer on line la info. requerida</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="cert-body">
+            <h2 class="section-title">DESCRIPCIÓN DEL SERVICIO</h2>
+            <p class="cert-leyenda" id="cert-leyenda">Se comunica que se ha realizado el servicio...</p>
+
+            <div class="cert-dates">
+                <p><strong>Fecha de servicio:</strong> <span id="cert-fecha-servicio">26/09/2025</span></p>
+                <p><strong>Fecha de vencimiento:</strong> <span id="cert-fecha-vencimiento">27/10/2025</span></p>
+            </div>
+
+            <h3 class="cert-number">CERTIFICADO N°<strong id="cert-number-display">6-269</strong></h3>
+
+            <div class="signature-area">
+                <p><strong>DIRECTOR TECNICO</strong> Ing. ALEJANDRO SANCHEZ FERRE</p>
+                <p>M.N. Nº 09884 CPIA - M.P. Nº 1082 CIAFBA</p>
+                <p>ESPECIALISTA SEGURIDAD E HIGIENE (UBA)</p>
+            </div>
+        </div>
+
+        <div class="cert-footer">
+            <h2 class="section-title">PRODUCTOS HABILITADOS</h2>
+            <div class="products-grid">
+                <div class="product-item">
+                    <p><strong>Producto:</strong> MAXFORCE</p>
+                    <p><strong>Fabricante:</strong> BAYER</p>
+                    <p><strong>Ingrediente activo:</strong> FIPRONIL 0,05%</p>
+                    <p><strong>Cert/Habilit producto:</strong> SENASA: M.S.R 3086</p>
+                </div>
+                <div class="product-item">
+                    <p><strong>Producto:</strong> SPARTEC</p>
+                    <p><strong>Fabricante:</strong> JOHNSON DIVERSEY ARGENTINA</p>
+                    <p><strong>Ingrediente activo:</strong> CLORURO DE BENZALCONIO</p>
+                    <p><strong>Cert/Habilit producto:</strong> ANMAT 0250152</p>
+                </div>
+                <div class="product-item">
+                    <p><strong>Producto:</strong> RASTOP</p>
+                    <p><strong>Fabricante:</strong> GLEBA</p>
+                    <p><strong>Ingrediente activo:</strong> BROMADIOLONE</p>
+                    <p><strong>Cert/Habilit producto:</strong> RNE N° 020033456</p>
+                </div>
+                <div class="product-item">
+                    <p><strong>Producto:</strong> GEXTRIN 25</p>
+                    <p><strong>Fabricante:</strong> GLEBA</p>
+                    <p><strong>Ingrediente activo:</strong> CIPERMETRINA</p>
+                    <p><strong>Cert/Habilit producto:</strong> SENASA C-2620</p>
+                </div>
+            </div>
+            
+            <div class="emergency-phones">
+                <h2 class="section-title">TELÉFONOS DE EMERGENCIA</h2>
+                <div class="phones-list">
+                    <p>HOSPITAL DE INTOXICACIONES: 0800-333-0160 | HOSPITAL DE NIÑOS GUTIERREZ: 11 4962-9247</p>
+                    <p>HOSPITAL POSADAS: 11 4469-9300 | HOSPITAL DE NIÑOS DE SAN JUSTO: 11 4651-5555</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Script -->
+    <script src="datos.js" charset="UTF-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
+    <script src="app.js" charset="UTF-8"></script>
+</body>
+</html>
